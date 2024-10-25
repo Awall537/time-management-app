@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
-import datetime
+import uuid
 
-# Initialize DataFrames for task management
+# Assign a unique session ID to each user when they open the app
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
+
+# Initialize DataFrames for this session's master list and holding spot
 if "master_list" not in st.session_state:
     st.session_state.master_list = pd.DataFrame(columns=["Task", "Category", "Due Date", "Status", "Priority"])
 
@@ -11,14 +15,14 @@ if "holding_spot" not in st.session_state:
 
 categories = ["Health", "Leisure", "Daily Living Tasks", "Personal", "Professional", "Miscellaneous"]
 
-st.title("📝 Time Management Tool")
+st.title(f"📝 Time Management Tool - Session ID: {st.session_state.session_id}")
 
 # Add Task to Master List
 with st.form("Add Task"):
     st.subheader("Add a New Task")
     task = st.text_input("Task")
     category = st.selectbox("Category", categories)
-    due_date = st.date_input("Due Date", datetime.date.today())
+    due_date = st.date_input("Due Date")
     status = st.selectbox("Status", ["Pending", "Completed"])
     priority = st.selectbox("Priority", ["High", "Medium", "Low"])
     submit_task = st.form_submit_button("Add Task")
@@ -41,8 +45,7 @@ with st.form("Capture Idea"):
     submit_idea = st.form_submit_button("Capture Idea")
 
     if submit_idea:
-        captured_on = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        new_idea = pd.DataFrame({"Idea": [idea], "Captured On": [captured_on]})
+        new_idea = pd.DataFrame({"Idea": [idea], "Captured On": [pd.Timestamp.now()]})
         st.session_state.holding_spot = pd.concat([st.session_state.holding_spot, new_idea], ignore_index=True)
         st.success("Idea captured successfully!")
 
